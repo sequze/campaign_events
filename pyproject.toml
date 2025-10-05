@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "campaign-events"
+version = "0.1.0"
+description = ""
+authors = ["Амир Абдрафиков <sequze@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+fastapi = "^0.118.0"
+uvicorn = "^0.37.0"
+pydantic = "^2.11.10"
+sqlalchemy = "^2.0.43"
+pydantic-settings = "^2.11.0"
+black = "^25.9.0"
+asyncpg = "^0.30.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
