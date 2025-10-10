@@ -6,12 +6,12 @@ class SEventModel(BaseModel):
     account_id: PositiveInt
     chat_id: PositiveInt
     message_id: PositiveInt
-    status: StatusEnum
     campaign_id: PositiveInt
 
 
 class EventDTO(SEventModel):
     id: PositiveInt
+    status: StatusEnum
 
     class Config:
         from_attributes = True

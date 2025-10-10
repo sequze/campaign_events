@@ -39,7 +39,7 @@ class RunConfig(BaseModel):
 
 class ApiPrefix(BaseModel):
     prefix: str = "/api"
-    campaigns: str = "/campaign"
+    campaigns: str = "/campaigns"
     events: str = "/events"
 
 
