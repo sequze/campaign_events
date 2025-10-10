@@ -20,6 +20,9 @@ celery = "^5.5.3"
 flower = "^2.0.1"
 redis = {extras = ["async"], version = "^6.4.0"}
 apscheduler = "^3.11.0"
+pytest = "^8.4.2"
+httpx = "^0.28.1"
+pytest-asyncio = "^1.2.0"
 
 
 [build-system]

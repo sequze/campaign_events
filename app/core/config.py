@@ -88,6 +88,8 @@ class Settings(BaseSettings):
     db: DatabaseConfig
     logging: LoggingConfig = LoggingConfig()
     scheduler_host: str = "localhost"
+    mode: Literal["DEV", "TEST", "PROD"]
+    test_db: DatabaseConfig
 
 
 settings = Settings()
