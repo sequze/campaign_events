@@ -41,6 +41,7 @@ class ApiPrefix(BaseModel):
     prefix: str = "/api"
     campaigns: str = "/campaigns"
     events: str = "/events"
+    scheduler: str = "/scheduler"
 
 
 class AuthJWTConfig(BaseModel):
