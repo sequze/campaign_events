@@ -1,6 +1,6 @@
-from sqlalchemy import select, update
+from sqlalchemy import select, update, insert, inspect
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from core.db.base_repository import SQlAlchemyRepository
 from core.models import Event
 from core.models.event import StatusEnum
@@ -9,22 +9,25 @@ from core.models.event import StatusEnum
 class EventRepository(SQlAlchemyRepository):
     model = Event
 
-    # @classmethod
-    # async def create_unique(cls, session: AsyncSession, data: dict):
-    #     """
-    #     Создаёт событие, если такого (campaign_id, chat_id, message_id) ещё нет.
-    #     Возвращает созданный объект или None, если дубликат.
-    #     """
-    #     stmt = select(Event).where(
-    #         Event.campaign_id == data["campaign_id"],
-    #         Event.chat_id == data["chat_id"],
-    #         Event.message_id == data["message_id"],
-    #     )
-    #     existing = await session.execute(stmt)
-    #     if existing.scalar_one_or_none():
-    #         return None
-    #
-    #     return await cls.create(session, data)
+    @classmethod
+    async def create(cls, session: AsyncSession, data: dict) -> Event | None:
+        mapper = inspect(cls.model)
+        data_to_create = {k: v for k, v in data.items() if k in mapper.columns}
+
+        stmt = (
+            pg_insert(Event)
+            .values(**data_to_create)
+            .on_conflict_do_nothing(
+                index_elements=[
+                    Event.campaign_id,
+                    Event.chat_id,
+                    Event.message_id,
+                ]
+            )
+            .returning(Event)
+        )
+        res = await session.execute(stmt)
+        return res.scalar_one_or_none()
 
     @classmethod
     async def get_pending(cls, session: AsyncSession) -> list[Event]:
