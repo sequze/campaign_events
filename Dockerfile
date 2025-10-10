@@ -12,4 +12,6 @@ COPY . .
 
 WORKDIR /app
 
+RUN chmod a+x /docker/*
+
 CMD ["python", "main.py"]
