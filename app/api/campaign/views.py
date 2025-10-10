@@ -8,7 +8,7 @@ from campaign.service import CampaignService
 router = APIRouter()
 
 
-@router.post("/")
+@router.post("/", status_code=201)
 async def create_campaign(
     data: SCampaignModel,
     service: CampaignService = CampaignServiceDep,
