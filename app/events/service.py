@@ -2,6 +2,9 @@ import logging
 import random
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from utils.exceptions import CampaignNotFound, EventAlreadyExists
+from campaign.repository import CampaignRepository
 from core.db.uow import UnitOfWork
 from events.repository import EventRepository
 from events.schema import SEventModel, EventDTO
@@ -9,14 +12,11 @@ from events.schema import SEventModel, EventDTO
 log = logging.getLogger(__name__)
 
 
-class EventExistsError(Exception):
-    pass
-
-
 class EventService:
     def __init__(self, uow: UnitOfWork):
         self.uow = uow
         self.repository = EventRepository
+        self.campaign_repository = CampaignRepository
 
     async def get_all(self):
         async with self.uow as uow:
@@ -46,6 +46,12 @@ class EventService:
         log.debug(f"Got: {exists}")
         return exists is not None
 
+    async def _validate_campaign_id(self, session: AsyncSession, id: int) -> None:
+        campaign = await self.campaign_repository.get_by_id(session, id)
+        log.debug(f"Got campaign: {campaign}")
+        if campaign is None:
+            raise CampaignNotFound()
+
     async def create(
         self,
         data: SEventModel,
@@ -54,7 +60,8 @@ class EventService:
             session = uow.session
             exists = await self._validate_input_data(session, data.model_dump())
             if exists:
-                raise EventExistsError("Event already exists")
+                raise EventAlreadyExists()
+            await self._validate_campaign_id(session, data.campaign_id)
             res = await self.repository.create(session, data.model_dump())
             await session.commit()
             return EventDTO.model_validate(res)

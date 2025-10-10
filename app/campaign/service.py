@@ -1,8 +1,11 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from campaign.schema import CampaignDTO, SCampaignModel
 from campaign.repository import CampaignRepository
 from core.db.uow import UnitOfWork
 from events.repository import EventRepository
 from events.schema import EventDTO
+from utils.exceptions import CampaignAlreadyExists
 
 
 class CampaignService:
@@ -17,9 +20,15 @@ class CampaignService:
             campaigns = await self.repository.get_all(session)
             return [CampaignDTO.model_validate(campaign) for campaign in campaigns]
 
+    async def _validate_campaign_name(self, session: AsyncSession, name: str):
+        campaign = await self.repository.get_by_name(session, name)
+        if campaign is not None:
+            raise CampaignAlreadyExists()
+
     async def create(self, data: SCampaignModel) -> CampaignDTO:
         async with self.uow as uow:
             session = uow.session
+            await self._validate_campaign_name(session, data.name)
             campaign = await self.repository.create(session, data.model_dump())
             await session.commit()
             return CampaignDTO.model_validate(campaign)
@@ -33,6 +42,7 @@ class CampaignService:
                 campaign = await self.repository.create(session, data)
             else:
                 campaign = campaigns[0]
+            await session.commit()
             return campaign.id
 
     async def get_campaign_events(self, id: int) -> list[EventDTO]:
